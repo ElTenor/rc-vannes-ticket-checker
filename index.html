@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vérificateur de billets RC Vannes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            text-align: center;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            max-width: 80%;
+        }
+        #status {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Vérificateur de billets RC Vannes</h1>
+        <p id="status">Cliquez sur le bouton pour vérifier la disponibilité des billets.</p>
+        <button onclick="checkAvailability()">Vérifier maintenant</button>
+    </div>
+
+    <script>
+        function checkAvailability() {
+            const status = document.getElementById('status');
+            status.textContent = 'Vérification en cours...';
+
+            const proxyUrl = 'https://api.allorigins.win/get?url=';
+            const targetUrl = encodeURIComponent('https://billetterie.rcvannes.bzh/fr');
+
+            fetch(proxyUrl + targetUrl)
+                .then(response => response.json())
+                .then(data => {
+                    const html = data.contents;
+                    if (html.includes('Billetterie ouverte')) {
+                        status.textContent = 'La billetterie est OUVERTE !';
+                        playAlertSound();
+                        window.open('https://billetterie.rcvannes.bzh/fr', '_blank');
+                    } else {
+                        status.textContent = 'La billetterie n\'est pas encore ouverte. Dernière vérification : ' + new Date().toLocaleTimeString();
+                    }
+                })
+                .catch(error => {
+                    status.textContent = 'Erreur lors de la vérification. Veuillez réessayer.';
+                    console.error('Erreur:', error);
+                });
+        }
+
+        function playAlertSound() {
+            const audio = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3');
+            audio.play();
+        }
+
+        // Vérification automatique toutes les 60 secondes
+        setInterval(checkAvailability, 60000);
+    </script>
+</body>
+</html>
